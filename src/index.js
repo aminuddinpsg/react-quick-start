@@ -1,28 +1,69 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const SearchBar = () => {
-  return (
-    <form>
-      <input type="text" placeholder="Search..." />
-    </form>
-  );
+class SearchBar extends React.Component{
+  constructor(props){
+    super(props)
+    this.handleTextFilter = this.handleTextFilter.bind(this);
+  }
+  
+  handleTextFilter(e){
+    this.props.onTextChange(e.target.value);
+  }
+
+  render(){
+    return (
+      <form>
+        <input type="text" placeholder="Search..." value ={this.props.filterText} onChange={this.handleTextFilter}/>
+      </form>
+    );
+  }
 }
 
-const FilterableProductTable = () => {
-  return (
-    <div className="FilterableProductTable">
-      <SearchBar/>
-      <ProductTable/>
-    </div>
-  );
+
+class FilterableProductTable extends React.Component{
+
+  constructor(props){
+    super(props)
+    this.state ={products : PRODUCTS,filterText: ''};
+    this.handleTextFilter = this.handleTextFilter.bind(this);  
+  }
+
+  handleTextFilter(filterText){
+      let filterProduct =[]
+
+      if(filterText.length > 3)
+        filterProduct = this.state.products.filter(({name}) => name == filterText)
+      else
+        filterProduct = PRODUCTS;
+
+    this.setState ({
+      filterText : filterText,
+      products : filterProduct
+    });
+    
+  }
+
+
+  render(){
+    return (
+      <div className="FilterableProductTable">
+        <SearchBar 
+        filterText ={this.state.filterText}
+        onTextChange = {this.handleTextFilter}
+        />
+        <ProductTable items={this.state.products}/>
+      </div>
+    );
+  }
+
 }
 
-const ProductTable = () => {
+const ProductTable = (props) => {
   const rows =[]
   let lastCategory = null
 
-  PRODUCTS.forEach(
+  props.items.forEach(
     e => {
       if(lastCategory != e.category)
         rows.push(<ProductCategoryRow category={e.category} key={e.category}/>)
