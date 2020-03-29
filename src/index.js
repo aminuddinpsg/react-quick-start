@@ -1,118 +1,118 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class SearchBar extends React.Component{
+class Calculator extends React.Component{
   constructor(props){
     super(props)
-    this.handleTextFilter = this.handleTextFilter.bind(this);
-  }
-  
-  handleTextFilter(e){
-    this.props.onTextChange(e.target.value);
+    this.state = {inputText : '',arrPlus : [], singleNum : 0}
+    this.displayText = this.displayText.bind(this);
   }
 
-  render(){
-    return (
-      <form>
-        <input type="text" placeholder="Search..." value ={this.props.filterText} onChange={this.handleTextFilter}/>
-      </form>
-    );
+  sumArray(val){
+    return val.reduce((a,b) => a + b ,0);
   }
-}
-
-
-class FilterableProductTable extends React.Component{
-
-  constructor(props){
-    super(props)
-    this.state ={products : PRODUCTS,filterText: ''};
-    this.handleTextFilter = this.handleTextFilter.bind(this);  
+  minusArray(val){
+    return val.reduce((a,b) => a - b ,0);
   }
 
-  handleTextFilter(filterText){
-      let filterProduct =[]
+  displayText(e){
 
-      if(filterText.length > 3)
-        filterProduct = this.state.products.filter(({name}) => name == filterText)
-      else
-        filterProduct = PRODUCTS;
+    const {value} = e.target;
+    let input = this.state.inputText;
+    let addNum = this.state.arrPlus;
+    let singNum = this.state.singleNum;
+
+    let addInput = input + value;
+    let addArr = '';
+
+    if(value !="+"){
+      singNum = parseInt(addInput);
+    }
+
+    if(value == "+"){
+      addNum.push(singNum);
+      addArr = '';
+      singNum = 0;
+
+    }  
+    if(value == "="){
+      addNum.push(singNum);
+      singNum = 0;
+      addInput = this.sumArray(addNum);
+    }
+
+    /*else if(value == "+" || value == "-"){
+      input = input + ' ';
+    }*/
 
     this.setState ({
-      filterText : filterText,
-      products : filterProduct
+      inputText : addInput,
+      arrPlus : addNum,
+      singleNum : singNum
+    },() => {
+      //console.log(this.state.inputText,this.state.arrPlus);
     });
-    
+
+
+  }
+  
+  render(){
+      return(
+        <div>
+          <InputScreen val = {this.state.inputText}/>
+          <Numbers getText ={this.displayText}/>
+          <Operations getText ={this.displayText}/>
+        </div>
+      );
+    }
   }
 
+class Numbers extends React.Component{
+  constructor(props){
+    super(props);
+  }
 
   render(){
     return (
-      <div className="FilterableProductTable">
-        <SearchBar 
-        filterText ={this.state.filterText}
-        onTextChange = {this.handleTextFilter}
-        />
-        <ProductTable items={this.state.products}/>
+      <div className="number">
+        <Button name="1" getText={this.props.getText}/>
+        <Button name="2" getText={this.props.getText}/>
+        <Button name="3" getText={this.props.getText}/>
+        <Button name="4" getText={this.props.getText}/>
+        <Button name="5" getText={this.props.getText}/>
       </div>
     );
   }
-
 }
 
-const ProductTable = (props) => {
-  const rows =[]
-  let lastCategory = null
-
-  props.items.forEach(
-    e => {
-      if(lastCategory != e.category)
-        rows.push(<ProductCategoryRow category={e.category} key={e.category}/>)
-
-      rows.push(<ProductRow product={e} key={e.name}/>)
-      lastCategory = e.category;
-    });
-
+const Operations = (props) => {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-    <tbody>{rows}</tbody>
-  </table>
+    <div className="Operation">
+      <Button name="+" getText={props.getText}/>
+      <Button name="-" getText={props.getText}/>
+      <Button name="=" getText={props.getText}/>  
+    </div>
   );
 }
 
-const ProductCategoryRow  = (props) => {
-  return (
-    <tr>
-      <th>
-        {props.category}
-      </th>
-    </tr>
-  );
+class InputScreen extends React.Component {
+  constructor(props){
+    super(props)
+  }
+
+  render(){
+    return(
+      <input type="text" value={this.props.val}></input>
+    );
+  }
 
 }
 
-const ProductRow  = (props) => {
-  const product = props.product;
+const Button = (props) => {
   return (
-    <tr>
-      <td>{product.name}</td>
-      <td>{product.price}</td>
-    </tr>
+    <button type="button" onClick={props.getText} value={props.name}>{props.name}</button>
   );
 }
 
-const PRODUCTS = [
-  {category :'food', name:'football' , price : '51.99'},
-  {category :'food', name:'basketball' , price : '11.99'},
-  {category :'food', name:'baseball' , price : '31.99'},
-  {category :'beverage',name:'coke' , price : '1.99'},
-  {category :'beverage', name:'tealive' , price : '2.99'},
-  {category :'beverage', name:'latte' , price : '3.99'}
-]
 
-ReactDOM.render(<FilterableProductTable/>, document.getElementById('root'));
+ReactDOM.render(<Calculator/>, document.getElementById('root'));
